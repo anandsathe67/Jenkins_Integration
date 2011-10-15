@@ -1,0 +1,110 @@
+<project name="HelloWorld" basedir=".." default="main">
+
+    <property name="src.dir"     		value="src"/>
+	<property name="test_src.dir"     	value="src/test"/>
+    <property name="conf.dir"    		value="conf"/>
+	<property name="docs.dir"    		value="docs"/>
+    <property name="dist.dir"    		value="dist"/>
+    <property name="classes.dir" 		value="${dist.dir}/classes"/>
+    <property name="jar.dir"     		value="${dist.dir}/jar"/>
+    <property name="lib.dir"     		value="lib"/>
+	<property name="testresults.dir"    value="testresults"/>
+	<property name="test_classes.dir"   value="${testresults.dir}/classes"/>
+	<property name="report.dir"  		value="${testresults.dir}/junitreport"/>
+	<property name="compile.debug"      value="true"/>
+
+	
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+	<path id="test.classpath">
+	   <fileset dir="${lib.dir}" includes="**/*.jar"/>
+	   <fileset dir="${jar.dir}" includes="/**/*.jar"/>
+	 </path>
+    <property name="main-class"  value="com.inkiru.hello.HelloWorld"/>
+
+	<path id="appjar" location="${jar.dir}/${ant.project.name}.jar"/>
+
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+		<delete dir="${testresults.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac 
+        	srcdir="${src.dir}" 
+        	debug="${compile.debug}"
+        	excludes="test/**" 
+        	destdir="${classes.dir}" 
+        	classpathref="classpath"/>
+		<copy todir="${classes.dir}">
+			<fileset dir="${conf.dir}">
+                <include name="log4j.properties" />
+            </fileset>
+			<fileset dir="${docs.dir}">
+            </fileset>
+		</copy>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java fork="true" classname="${main-class}">
+            <classpath>
+                <path refid="classpath"/>
+				<path id="application" location="${jar.dir}/${ant.project.name}.jar"/>
+            </classpath>
+        </java>
+    </target>
+ 
+	<target name="compile.unit.test" depends="jar">
+        <mkdir dir="${test_classes.dir}"/>
+        <javac 
+        	srcdir="${src.dir}" 
+        	includes="test/*.java" 
+        	debug="${compile.debug}"
+        	destdir="${test_classes.dir}" 
+        	classpathref="classpath"/>
+	</target>
+	<target name="unit.test" depends="compile.unit.test">
+		<mkdir dir="${report.dir}"/>
+		   <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+		      <classpath>
+				<path refid="test.classpath"/>
+		      </classpath>
+		    </taskdef>
+
+        <junit printsummary="yes" fork="true" haltonfailure="yes" dir="${test_classes.dir}">
+        	<jvmarg value="-Duser.dir=${test_classes.dir}"/>
+            <formatter type="xml"/>
+		      <classpath>
+				<path refid="test.classpath"/>
+		      </classpath>
+            <batchtest fork="true" todir="${report.dir}">
+                <fileset dir="${test_src.dir}">
+                	<include name="**/Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="junitreport" depends="unit.test">
+        <junitreport todir="${report.dir}">
+            <fileset dir="${report.dir}" includes="TEST-*.xml"/>
+            <report todir="${report.dir}"/>
+        </junitreport>
+    </target>
+	
+    <target name="clean-build" depends="clean,jar"/>
+
+    <target name="main" depends="clean,run"/>
+
+</project>
