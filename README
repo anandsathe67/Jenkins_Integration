@@ -3,4 +3,4 @@ ant run
 ant junitreport 
 should run the junit and generate the junit reports. Currently running the ant junit task (which this
 task depends on) generates a class not found error. Need to figure what some issues there
-The build file has been thrown together a bit hastily - requires some cleanup...........,,,,
+The build file has been thrown together a bit hastily - requires some cleanup...........,,,,...
