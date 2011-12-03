@@ -1,5 +1,4 @@
 <project name="HelloWorld" basedir=".." default="main">
-
     <property name="src.dir"     		value="src"/>
 	<property name="test_src.dir"     	value="src/test"/>
     <property name="conf.dir"    		value="conf"/>
